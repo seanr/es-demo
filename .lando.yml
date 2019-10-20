@@ -1,7 +1,7 @@
 name: es-demo
 services:
   appserver:
-    type: apache
+    type: compose
     build_as_root:
       # Install sysvsem via docker
       #- "docker-php-ext-install pcntl sysvsem sysvshm sysvmsg"
@@ -13,7 +13,7 @@ services:
          touch /var/log/search/cron.log"
       # Java, etc needed for Norconex
       - "apt-get update -y && \
-         apt-get install -y cron expect vim
+         apt-get install -y cron expect vim wget unzip
          openjdk-8-jre-headless \
          openjdk-8-jre \
          openjdk-8-jdk-headless \
@@ -21,6 +21,7 @@ services:
     build:
       - "/app/scripts/norconex.sh"
     services:
+      image: devwithlando/php:7.2-fpm
       command: docker-php-entrypoint /app/norconex/norconex-jef-monitor-4.0.5/jef-monitor.sh >/dev/null 2>&1
       ports:
         - "8080:8080"
@@ -52,3 +53,6 @@ services:
         - elasticsearch
 env_file:
   - config/.env
+#proxy:
+#  appserver:
+#    - http://esdemo.lndo.site:8080

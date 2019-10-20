@@ -6,7 +6,7 @@ rm -rf /app/norconex/
 touch /var/log/search/worker.log
 
 # Move to Norconex directory.
-mkdir /app/norconex/
+mkdir -p /app/norconex/
 cd /app/norconex/
 
 # Add Norconex components.
@@ -29,6 +29,8 @@ then
 fi
 
 # Build Norconex.
+cp /app/config/jefconfig.xml /app/norconex/norconex-jef-monitor-4.0.5/config/jefconfig.xml
 chmod a+x /app/norconex/norconex-jef-monitor-4.0.5/jef-monitor.sh
 chmod a+x /app/norconex/norconex-committer-elasticsearch-4.1.0/install.sh
+
 /app/scripts/norconex.expect
