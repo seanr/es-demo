@@ -65,7 +65,7 @@ but with the extension ".variables" or ".properties".
        instance.  Sometimes required to be certain values for robots.txt
        files.
     -->
-  <userAgent>Mozilla/5.0 (compatible; wcmcrawler/0.1; +http://weill.cornell.edu/wcmcrawler)</userAgent>
+  <userAgent>Mozilla/5.0 (compatible; wcmcrawler/0.1; +http://webolutionary.com/crawler)</userAgent>
 
   <!-- Optional URL normalization feature. The class must implement
        com.norconex.collector.http.url.IURLNormalizer,
