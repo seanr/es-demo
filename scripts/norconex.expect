@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+# Start Install.
+spawn /app/norconex/norconex-committer-elasticsearch-4.1.0/install.sh
+
+# Respond to prompts.
+expect "Please enter a target directory:\r"
+send -- "/app/norconex/norconex-collector-http-2.8.1/lib\r"
+
+expect "Your choice (default = 1): "
+send -- "1\r"
+
+expect eof

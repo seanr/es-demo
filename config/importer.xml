@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+
+<importer>
+  <tempDir>$workdir/files</tempDir>
+  <preParseHandlers>
+    <!-- follow HTML meta-equiv redirects without indexing original page -->
+    <filter class="${importer}.handler.filter.impl.RegexMetadataFilter" onMatch="exclude" field="refresh">
+      <regex>.*</regex>
+    </filter>
+
+    <!-- Extract addition info from tags -->
+    <tagger class="${importer}.handler.tagger.impl.DOMTagger">
+      <restrictTo field="document.contentType">text/html</restrictTo>
+      <dom selector="h1" toField="page-title" extract="text" defaultValue="" />
+      <dom selector="link[rel=canonical]" toField="canonical" extract="attr(href)" defaultValue="" />
+      <dom selector="link[rel=shortlink]" toField="shortlink" extract="attr(href)" defaultValue="" />      
+      <dom selector="img" toField="img-alt-text" extract="attr(alt)" defaultValue="" />
+    </tagger>
+
+    <tagger class="${importer}.handler.tagger.impl.DocumentLengthTagger" field="document.size.preparse" />
+    <!-- Add constant field with crawler id for individual site naming -->
+    <tagger class="${importer}.handler.tagger.impl.ConstantTagger" onConflict="replace">
+      <constant name="site-collection">${crawler-id}</constant>
+      <constant name="is-home">false</constant>
+    </tagger>
+
+    <!-- Strip redundant content -->
+    <transformer class="${importer}.handler.transformer.impl.StripBetweenTransformer" inclusive="false" caseSensitive="false">
+      <restrictTo field="document.contentType">text/html</restrictTo>
+      <stripBetween>
+        <start><![CDATA[<fieldset><legend class="sr-only">]]></start>
+        <end><![CDATA[</fieldset><input type="hidden".+?(?=\>)>]]></end>
+      </stripBetween>
+       <stripBetween>
+        <start><![CDATA[<div class="title-bar">]]></start>
+        <end><![CDATA[</div>(\s*)<nav id="top-nav" role="navigation">]]></end>
+      </stripBetween>
+      <stripBetween>
+        <start><![CDATA[<ul class="nav nav-tabs" role="menu">]]></start>
+        <end><![CDATA[</ul>]]></end>
+      </stripBetween>
+      <stripBetween>
+        <start><![CDATA[<nav id="top-nav" role="navigation">]]></start>
+        <end><![CDATA[</nav>]]></end>
+      </stripBetween>
+      <stripBetween>
+        <start><![CDATA[<h2 class="element-invisible">]]></start>
+        <end><![CDATA[</h2>]]></end>
+      </stripBetween>
+      <stripBetween>
+        <start><![CDATA[<div class="breadcrumb">]]></start>
+        <end><![CDATA[</div>]]></end>
+      </stripBetween>
+      <stripBetween>
+        <start><![CDATA[<header.*?(?>)>]]></start>
+        <end><![CDATA[</header>]]></end>
+      </stripBetween>
+      <stripBetween>
+        <start><![CDATA[<footer role="contentinfo".+?(?=\>)>]]></start>
+        <end><![CDATA[</footer>]]></end>
+      </stripBetween>
+    </transformer>
+  </preParseHandlers>
+
+  <postParseHandlers>
+    <!-- Convert dates -->
+    <tagger class="${importer}.handler.tagger.impl.DateFormatTagger"
+        fromField="Date"
+        toField="requested-date" 
+        toFormat="EPOCH" >
+      <fromFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</fromFormat>
+      <fromFormat>EEE, dd MMM yyyy HH:mm:ss zzz</fromFormat>
+    </tagger>
+    <tagger class="${importer}.handler.tagger.impl.DateFormatTagger"
+        fromField="Last-Modified"
+        toField="modified-date"
+        toFormat="EPOCH">
+        <!-- 2017-09-26T14:47:29Z -->
+      <fromFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</fromFormat>
+      <fromFormat>EEE, dd MMM yyyy HH:mm:ss zzz</fromFormat>
+    </tagger>
+
+    <!-- Convert true if canonical is matched with crawler-url -->
+    <tagger class="${importer}.handler.tagger.impl.ReplaceTagger">
+      <restrictTo caseSensitive="false" field="Content-Location"><![CDATA[^${crawler-url}.?]]></restrictTo>
+      <replace fromField="is-home">
+        <fromValue>false</fromValue>
+        <toValue>true</toValue>
+      </replace>
+    </tagger>
+
+    <!-- Select single value -->
+    <tagger class="${importer}.handler.tagger.impl.ForceSingleValueTagger">
+      <singleValue field="title" action="keepFirst" />
+      <singleValue field="Content-Length" action="keepFirst" />
+      <singleValue field="Date" action="keepFirst" />
+      <singleValue field="requested-date" action="keepFirst" />
+      <singleValue field="Last-Modified" action="keepLast" />
+      <singleValue field="modified-date" action="keepLast" />
+      <singleValue field="is-home" action="keepLast" />      
+    </tagger>
+
+    <tagger class="${importer}.handler.tagger.impl.RenameTagger">
+      <rename fromField="collector.referrer-link-title" toField="doc-title" overwrite="true" />
+    </tagger>
+
+    <!-- Gather document size info -->
+    <tagger class="${importer}.handler.tagger.impl.DocumentLengthTagger" field="document.size.postparse" />
+
+    <!-- Language tagger to make en as default -->
+    <tagger class="${importer}.handler.tagger.impl.LanguageTagger" fallbackLanguage="en" />
+
+    <!-- Merge image alt text into one field -->
+    <tagger class="${importer}.handler.tagger.impl.MergeTagger">
+      <merge toField="img-alt" deleteFromFields="true" singleValue="true" singleValueSeparator=", ">
+        <fromFields>img-alt-text</fromFields>
+      </merge>
+    </tagger>
+
+    <!-- This "KeepOnlyTagger" ensures to drop crawled fields except defined fields. -->
+    <tagger class="${importer}.handler.tagger.impl.KeepOnlyTagger">
+      <fields>
+        site-collection, content, title, page-title, description, canonical, shortlink, doc-title, img-alt,
+        collector.referrer-reference, collector.depth, collector.is-crawl-new, is-home,
+        document.contentType, document.contentEncoding, document.reference, document.size.preparse, document.size.postparse,
+        Author, Etag, Expires, Content-Language, Content-Length, Content-Location, X-Generator, Date, Last-Modified,
+        requested-date, modified-date
+      </fields>
+    </tagger>
+
+    <!-- Reject small documents (<10 Bytes)-->
+    <filter class="${importer}.handler.filter.impl.NumericMetadataFilter" onMatch="exclude" field="document.size.postparse">
+      <condition operator="lt" number="10" />
+    </filter>
+
+    <!-- Collapse spaces and line feeds -->
+    <transformer class="${importer}.handler.transformer.impl.ReduceConsecutivesTransformer">
+      <reduce>\s</reduce>
+      <reduce>\n</reduce>
+      <reduce>\r</reduce>
+      <reduce>\t</reduce>
+      <reduce>\n\s</reduce>
+      <reduce>\n\t</reduce>
+      <reduce>\s\s</reduce>
+      <reduce>\n\n</reduce>
+      <reduce>\n\r</reduce>
+      <reduce>\n\s\t</reduce>
+      <reduce>\n\r\s</reduce>
+      <reduce>\s\n\r</reduce>
+      <reduce>\s\n\r\s</reduce>
+    </transformer>
+
+    <!-- Remove whitespace and additional text -->
+    <transformer class="${importer}.handler.transformer.impl.ReplaceTransformer">
+      <replace>
+        <fromValue>^\s+|\s+$|\s+(?=\s)</fromValue>
+        <toValue></toValue>
+      </replace>
+      <replace>
+        <fromValue> | Weill Cornell Medicine</fromValue>
+        <toValue></toValue>
+      </replace>
+      <replace>
+        <fromValue>Enter the terms you wish to search for.</fromValue>
+        <toValue></toValue>
+      </replace>
+      <replace>
+        <fromValue>Jump To Top</fromValue>
+        <toValue></toValue>
+      </replace>
+    </transformer>
+
+  </postParseHandlers>
+</importer>

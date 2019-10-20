@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+
+<!-- Commits a document to a data source as default -->
+<!--
+<committer class="$fsCommitter">
+  <directory>$workdir/cralwed/crawled-data</directory>
+</committer>
+-->
+
+<committer class="com.norconex.committer.elasticsearch.ElasticsearchCommitter">
+  <nodes>http://elasticsearch.esdemo.internal:9200</nodes>
+  <indexName>es-demo</indexName>
+  <queueDir>$workdir/commit</queueDir>
+  <connectionTimeout>5 minutes</connectionTimeout>
+  <socketTimeout>5 minutes</socketTimeout>
+  <typeName>Documents</typeName>
+  <commitBatchSize>50</commitBatchSize>
+  <maxRetries>1</maxRetries>
+  <fixBadIds>true</fixBadIds>
+</committer>

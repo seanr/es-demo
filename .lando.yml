@@ -1,15 +1,54 @@
 name: es-demo
 services:
-  search:
-    type: elasticsearch:latest
-    portforward: 9200
+  appserver:
+    type: apache
+    build_as_root:
+      # Install sysvsem via docker
+      #- "docker-php-ext-install pcntl sysvsem sysvshm sysvmsg"
+      # Directories used by search daemon
+      - "mkdir -p /var/log/search /var/norconex/output/ && \
+         chmod a+rw /var/log/search /var/norconex/output/ && \
+         chmod +x /app/scripts/norconex.sh && \
+         chmod +x /app/scripts/norconex.expect && \
+         touch /var/log/search/cron.log"
+      # Java, etc needed for Norconex
+      - "apt-get update -y && \
+         apt-get install -y cron expect vim
+         openjdk-8-jre-headless \
+         openjdk-8-jre \
+         openjdk-8-jdk-headless \
+         openjdk-8-jdk"
+    build:
+      - "/app/scripts/norconex.sh"
+    services:
+      command: docker-php-entrypoint /app/norconex/norconex-jef-monitor-4.0.5/jef-monitor.sh >/dev/null 2>&1
+      ports:
+        - "8080:8080"
+  elasticsearch:
+    type: compose
+    services:
+      image: blacktop/elasticsearch:7
+      command: /elastic-entrypoint.sh elasticsearch
+      ports:
+        - "9200:9200"
+    #  volumes:
+    #    - ./.lando/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     config:
       server: config/elasticsearch.yml
+    # Install ES requirement JDK here & set JAVA_HOME at `.lando/.env`
+    build_as_root:
+      - apk --no-cache add openjdk11
+    # Install `analysis-icu` plugin after ES service boots up
+    run_as_root:
+      - elasticsearch-plugin install analysis-icu
   kibana:
     type: compose
     services:
-      image: docker.elastic.co/kibana/kibana:latest
+      image: blacktop/kibana:7
+      command: /docker-entrypoint.sh kibana
       ports:
         - "5601:5601"
-#    config:
-#      server: config/elasticsearch.yml
+      depends_on:
+        - elasticsearch
+env_file:
+  - config/.env

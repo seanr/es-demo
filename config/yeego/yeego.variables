@@ -1,0 +1,5 @@
+workdir = /data/wcm-output/its
+crawler-id = its
+crawler-url = https://its.weill.cornell.edu/
+logsdir = /var/log/search
+crawler-schedule = 0 8 * * SAT
