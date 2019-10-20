@@ -10,14 +10,23 @@ mkdir /app/norconex/
 cd /app/norconex/
 
 # Add Norconex components.
-wget -NS --content-disposition 'https://oss.sonatype.org/content/repositories/releases/com/norconex/collectors/norconex-collector-http/2.8.1/norconex-collector-http-2.8.1.zip'
-wget -NS --content-disposition 'https://oss.sonatype.org/content/repositories/releases/com/norconex/jef/norconex-jef-monitor/4.0.5/norconex-jef-monitor-4.0.5.zip'
-wget -NS --content-disposition 'https://oss.sonatype.org/content/repositories/releases/com/norconex/collectors/norconex-committer-elasticsearch/4.1.0/norconex-committer-elasticsearch-4.1.0.zip'
+if [ ! -d "norconex-collector-http-2.8.1" ]
+then
+  wget -NS --content-disposition 'https://oss.sonatype.org/content/repositories/releases/com/norconex/collectors/norconex-collector-http/2.8.1/norconex-collector-http-2.8.1.zip'
+  unzip -o norconex-collector-http-2.8.1.zip; rm norconex-collector-http-2.8.1.zip
+fi
 
-# Extract all.
-unzip -o norconex-collector-http-2.8.1.zip; rm norconex-collector-http-2.8.1.zip
-unzip -o norconex-jef-monitor-4.0.5.zip; rm norconex-jef-monitor-4.0.5.zip
-unzip -o norconex-committer-elasticsearch-4.1.0.zip; rm norconex-committer-elasticsearch-4.1.0.zip
+if [ ! -d "norconex-committer-elasticsearch-4.1.0" ]
+then
+  wget -NS --content-disposition 'https://oss.sonatype.org/content/repositories/releases/com/norconex/collectors/norconex-committer-elasticsearch/4.1.0/norconex-committer-elasticsearch-4.1.0.zip'
+  unzip -o norconex-committer-elasticsearch-4.1.0.zip; rm norconex-committer-elasticsearch-4.1.0.zip
+fi
+
+if [ ! -d "norconex-jef-monitor-4.0.5" ]
+then
+  wget -NS --content-disposition 'https://oss.sonatype.org/content/repositories/releases/com/norconex/jef/norconex-jef-monitor/4.0.5/norconex-jef-monitor-4.0.5.zip'
+  unzip -o norconex-jef-monitor-4.0.5.zip; rm norconex-jef-monitor-4.0.5.zip
+fi
 
 # Build Norconex.
 chmod a+x /app/norconex/norconex-jef-monitor-4.0.5/jef-monitor.sh
