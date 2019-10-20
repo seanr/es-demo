@@ -1,5 +1,5 @@
-workdir = /data/wcm-output/its
+workdir = /var/norconex/output/yeego
 crawler-id = its
-crawler-url = https://its.weill.cornell.edu/
+crawler-url = https://yeegotravel.com/
 logsdir = /var/log/search
 crawler-schedule = 0 8 * * SAT

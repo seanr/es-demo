@@ -1,5 +1,5 @@
 workdir = /var/norconex/output/webolutionary
 crawler-id = its
-crawler-url = https://webolutionary.com
+crawler-url = https://webolutionary.com/
 logsdir = /var/log/search
 crawler-schedule = 0 8 * * SAT
