@@ -24,4 +24,5 @@ cp /app/config/jefconfig.xml /app/norconex/norconex-jef-monitor-4.0.5/config/jef
 chmod a+x /app/norconex/norconex-jef-monitor-4.0.5/jef-monitor.sh
 chmod a+x /app/norconex/norconex-committer-elasticsearch-4.1.0/install.sh
 
+# Required for interactive responses to Norconex ES committer installer.
 /app/scripts/norconex.expect

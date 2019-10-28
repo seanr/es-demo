@@ -18,7 +18,7 @@ services:
          openjdk-8-jre \
          openjdk-8-jdk-headless \
          openjdk-8-jdk"
-    build:
+    post-rebuild:
       - "/app/scripts/norconex.sh"
     services:
       image: devwithlando/php:7.2-fpm
