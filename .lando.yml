@@ -18,8 +18,6 @@ services:
          openjdk-8-jre \
          openjdk-8-jdk-headless \
          openjdk-8-jdk"
-    post_rebuild:
-      - "/app/scripts/norconex.sh"
     services:
       image: devwithlando/php:7.2-fpm
       command: docker-php-entrypoint /app/norconex/norconex-jef-monitor-4.0.5/jef-monitor.sh >/dev/null 2>&1
@@ -30,8 +28,6 @@ services:
     services:
       image: blacktop/elasticsearch:7
       command: /elastic-entrypoint.sh elasticsearch
-      ports:
-        - "9200:9200"
     #  volumes:
     #    - ./.lando/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     config:
@@ -47,10 +43,11 @@ services:
     services:
       image: blacktop/kibana:7
       command: /docker-entrypoint.sh kibana
-      ports:
-        - "5601:5601"
       depends_on:
         - elasticsearch
+events:
+  post-rebuild:
+    - appserver: /app/scripts/norconex.sh
 env_file:
   - config/.env
 proxy:
