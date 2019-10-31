@@ -7,7 +7,7 @@ This repo is intended to provide a demonstration of an Elasticsearch setup with 
 
 #### Appserver
 
-Appserver provides a container to run the Norconex components for crawling remote sites. Additionally, in includes a JEF monitor that can be accessed via http://appserver-esdemo.lndo.site:8000/. The configuration for this application can be modified at config/jefconfig.xml.
+Appserver provides a container to run the Norconex components for crawling remote sites. Additionally, in includes a JEF monitor that can be accessed via https://appserver-esdemo.lndo.site/. The configuration for this application can be modified at config/jefconfig.xml.
 
 This service also installs PHP to enable additional scripting and provide an easy Docker endpoint.
 
