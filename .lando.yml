@@ -28,13 +28,13 @@ services:
     services:
       image: blacktop/elasticsearch:7
       command: /elastic-entrypoint.sh elasticsearch
-    #  volumes:
-    #    - ./.lando/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     config:
       server: config/elasticsearch.yml
     # Install ES requirement JDK here & set JAVA_HOME at `.lando/.env`
     build_as_root:
-      - apk --no-cache add openjdk11
+      - "apk --no-cache add openjdk11 && \
+         apt-get update -y && \
+         apt-get install -y curl"
     # Install `analysis-icu` plugin after ES service boots up
     run_as_root:
       - elasticsearch-plugin install analysis-icu
@@ -48,6 +48,7 @@ services:
 events:
   post-rebuild:
     - appserver: /app/scripts/norconex.sh
+    - elasticsearch: /app/scripts/wait-for-it.sh elasticsearch:9200 -- /app/scripts/elasticsearch.sh
 env_file:
   - config/.env
 proxy:
